@@ -54,13 +54,13 @@ class CarConnect: RCTEventEmitter {
                 connection = true
             }
             if !connected {
-                connect()
+                connect(name: output.portName, uid: output.uid)
             }
           }
         }
 
         if (connected && !connection) {
-          disconnect()
+            disconnect(uid: "")
         }
     }
 
@@ -74,14 +74,14 @@ class CarConnect: RCTEventEmitter {
             case .newDeviceAvailable:
               let session = AVAudioSession.sharedInstance()
               for output in session.currentRoute.outputs where output.portType == AVAudioSession.Port.bluetoothA2DP || output.portType == AVAudioSession.Port.bluetoothHFP {
-                  connect()
+                  connect(name: output.portName, uid: output.uid)
                   break
               }
             case .oldDeviceUnavailable:
               if let previousRoute =
                   userInfo[AVAudioSessionRouteChangePreviousRouteKey] as? AVAudioSessionRouteDescription {
                 for output in previousRoute.outputs where output.portType == AVAudioSession.Port.bluetoothA2DP || output.portType == AVAudioSession.Port.bluetoothHFP  {
-                      disconnect()
+                      disconnect(uid: output.uid)
                       break
                   }
               }
@@ -90,17 +90,17 @@ class CarConnect: RCTEventEmitter {
     }
 
     @objc
-    func connect() {
+    func connect(name: String, uid: String) {
         connected = true
         print("conected is \(connected)")
-        sendEvent(withName: "onConnect", body: ["connected": connected])
+        sendEvent(withName: "onConnect", body: ["connected": connected, "deviceName": name, "deviceUid": uid])
     }
 
     @objc
-    func disconnect() {
+    func disconnect(uid: String) {
         connected = false
         print("conected is \(connected)")
-        sendEvent(withName: "onDisconnect", body: ["connected": connected])
+        sendEvent(withName: "onDisconnect", body: ["connected": connected, "deviceUid": uid])
     }
 
     override
